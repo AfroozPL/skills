@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 export default function TeacherForm() {
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -17,11 +19,25 @@ export default function TeacherForm() {
     setFileName(file.name);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // مرحله ۱: هنوز AI نداریم؛ فقط جریان را نشان می‌دهیم و درس نمونه را باز می‌کنیم.
-    // در مرحله ۲ این‌جا متن به endpoint تولید درس ارسال می‌شود.
-    router.push("/lesson/sample");
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error ?? "خطای ناشناخته رخ داد.");
+      }
+      router.push(`/lesson/${data.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "خطای ناشناخته رخ داد.");
+      setLoading(false);
+    }
   }
 
   const charCount = text.trim().length;
@@ -44,8 +60,9 @@ export default function TeacherForm() {
           }}
           rows={10}
           dir="auto"
+          disabled={loading}
           placeholder="متن جزوه را این‌جا paste کنید… (یا فایل txt آپلود کنید)"
-          className="w-full resize-y rounded-xl border border-slate-300 bg-white p-4 text-sm leading-7 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+          className="w-full resize-y rounded-xl border border-slate-300 bg-white p-4 text-sm leading-7 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:opacity-60"
         />
         <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
           <span className="tabular">{charCount} کاراکتر</span>
@@ -57,7 +74,8 @@ export default function TeacherForm() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          disabled={loading}
+          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
           📎 آپلود فایل txt
         </button>
@@ -71,17 +89,32 @@ export default function TeacherForm() {
 
         <button
           type="submit"
-          disabled={charCount === 0}
-          className="rounded-xl bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
+          disabled={charCount === 0 || loading}
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          ✨ ساخت درس تعاملی
+          {loading ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              در حال ساخت درس…
+            </>
+          ) : (
+            <>✨ ساخت درس تعاملی</>
+          )}
         </button>
       </div>
 
-      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-        مرحله ۱ (اسکلت): فعلاً دکمه‌ی ساخت، یک درس نمونه‌ی آماده را باز می‌کند. در
-        مرحله ۲ متن شما واقعاً به هوش مصنوعی سپرده می‌شود.
-      </p>
+      {loading && (
+        <p className="rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-700">
+          هوش مصنوعی در حال تبدیل جزوه به درس تعاملی است. این کار ممکن است تا یک
+          دقیقه طول بکشد؛ لطفاً صفحه را نبندید.
+        </p>
+      )}
+
+      {error && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          ⚠️ {error}
+        </p>
+      )}
     </form>
   );
 }

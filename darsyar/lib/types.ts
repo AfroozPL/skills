@@ -32,5 +32,5 @@ export interface Lesson {
   terms: Term[];
 }
 
-/** شکل خامی که مدل تولید می‌کند (بدون id/title که در سرور اضافه می‌شود). */
-export type GeneratedLesson = Pick<Lesson, "keyPoints" | "terms">;
+/** شکل خامی که مدل تولید می‌کند (بدون id که در سرور/دیتابیس اضافه می‌شود). */
+export type GeneratedLesson = Pick<Lesson, "title" | "keyPoints" | "terms">;
