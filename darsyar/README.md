@@ -38,32 +38,48 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ۳. `npm run dev` را اجرا کنید، متن جزوه را وارد کنید و «✨ ساخت درس تعاملی» را بزنید — درس واقعی تولید و در دیتابیس ذخیره می‌شود.
 
+### راه‌اندازی مرحله ۳ (کاربران + RLS)
+
+۱. `supabase/schema.sql` را **دوباره** اجرا کنید (بخش RLS به‌صورت idempotent اضافه شده و جدول موجود را خراب نمی‌کند).
+
+۲. در پنل Supabase → **Authentication → Providers → Email** فعال باشد. برای تجربه‌ی روان در MVP، گزینه‌ی **Confirm email** را موقتاً خاموش کنید تا ثبت‌نام بدون تأیید ایمیل مستقیم وارد شود.
+
+۳. به `/login` بروید، حساب معلم بسازید، درس تولید کنید و در `/dashboard` فقط درس‌های خودتان را ببینید. لینک `/lesson/<id>` بدون ورود هم برای دانشجو باز می‌شود.
+
 ## نقشه‌ی راه (مرحله‌به‌مرحله)
 
 - [x] **مرحله ۱ — اسکلت با داده‌ی تستی:** صفحه‌ی معلم (paste/آپلود txt) + صفحه‌ی درس با داده‌ی نمونه‌ی هاردکد، طراحی RTL.
 - [x] **مرحله ۲ — مغز AI:** endpoint تولید درس با Claude، validate خروجی JSON + یک retry، ذخیره در Supabase.
-- [ ] **مرحله ۳ — کاربران:** ورود معلم با Supabase Auth، RLS، لینک عمومی درس برای دانشجو.
+- [x] **مرحله ۳ — کاربران:** ورود معلم با Supabase Auth، RLS، لینک عمومی درس برای دانشجو.
 - [ ] **مرحله ۴ — صیقل:** حالت لودینگ، پیام‌های خطای فارسی، دکمه‌ی «تولید صوت (به‌زودی)».
 
 ## ساختار
 
 ```
 darsyar/
+├── middleware.ts               # refresh session روی هر درخواست
 ├── app/
-│   ├── layout.tsx              # چیدمان RTL + هدر/فوتر
-│   ├── page.tsx                # صفحه‌ی معلم (فرم آپلود)
-│   ├── lesson/[id]/page.tsx    # صفحه‌ی درس (از Supabase می‌خواند)
-│   └── api/generate/route.ts   # endpoint تولید درس (Claude + validate + retry + ذخیره)
+│   ├── layout.tsx              # چیدمان RTL + هدر auth-aware
+│   ├── page.tsx                # صفحه‌ی معلم (نیازمند ورود برای ساخت)
+│   ├── login/page.tsx          # ورود/ثبت‌نام معلم
+│   ├── dashboard/page.tsx      # فهرست درس‌های معلم (محافظت‌شده، RLS)
+│   ├── lesson/[id]/page.tsx    # صفحه‌ی عمومی درس (لینک دانشجو، بدون ورود)
+│   ├── auth/signout/route.ts   # خروج
+│   └── api/generate/route.ts   # endpoint تولید درس (نیازمند احراز هویت)
 ├── components/
 │   ├── TeacherForm.tsx         # فرم آپلود (paste/txt) + فراخوانی API
 │   ├── LessonView.tsx          # نمایش درس
-│   └── QuizCard.tsx            # تمرین چهارگزینه‌ای تعاملی
+│   ├── QuizCard.tsx            # تمرین چهارگزینه‌ای تعاملی
+│   └── ShareLink.tsx           # کپی لینک عمومی درس
 ├── lib/
 │   ├── types.ts                # قرارداد داده‌ی درس
 │   ├── sample-lesson.ts        # داده‌ی نمونه‌ی مرحله ۱
 │   ├── anthropic.ts            # کلاینت Claude + منطق تولید درس
 │   ├── validate.ts             # اعتبارسنجی خروجی مدل
-│   └── supabase/server.ts      # کلاینت سمت‌سرور Supabase
+│   └── supabase/
+│       ├── server.ts           # کلاینت‌های سمت‌سرور (service role + session)
+│       ├── client.ts           # کلاینت مرورگر
+│       └── middleware.ts       # منطق refresh session
 └── supabase/
-    └── schema.sql              # اسکیمای جدول lessons
+    └── schema.sql              # اسکیمای جدول lessons + RLS
 ```

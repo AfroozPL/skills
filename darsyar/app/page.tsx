@@ -1,6 +1,22 @@
+import Link from "next/link";
 import TeacherForm from "@/components/TeacherForm";
+import { getServerSupabase } from "@/lib/supabase/server";
 
-export default function HomePage() {
+async function isAuthenticated(): Promise<boolean> {
+  try {
+    const supabase = await getServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return !!user;
+  } catch {
+    return false;
+  }
+}
+
+export default async function HomePage() {
+  const authed = await isAuthenticated();
+
   return (
     <div className="space-y-8">
       <section className="text-center">
@@ -14,7 +30,22 @@ export default function HomePage() {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <TeacherForm />
+        {authed ? (
+          <TeacherForm />
+        ) : (
+          <div className="py-6 text-center">
+            <div className="text-3xl">🔐</div>
+            <p className="mt-3 text-sm text-slate-600">
+              برای ساخت درس، ابتدا به‌عنوان معلم وارد شوید.
+            </p>
+            <Link
+              href="/login"
+              className="mt-4 inline-block rounded-xl bg-brand-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+            >
+              ورود / ثبت‌نام معلم
+            </Link>
+          </div>
+        )}
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">

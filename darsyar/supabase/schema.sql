@@ -16,5 +16,22 @@ create table if not exists public.lessons (
 create index if not exists lessons_owner_id_idx on public.lessons (owner_id);
 create index if not exists lessons_created_at_idx on public.lessons (created_at desc);
 
--- توجه: RLS (امنیت سطح ردیف) در مرحله ۳ اضافه می‌شود.
--- فعلاً دسترسی فقط از سمت سرور با کلید service role انجام می‌شود.
+-- ============================================================
+-- مرحله ۳ — امنیت سطح ردیف (RLS)
+-- این بخش را روی جدول موجود هم می‌توانید دوباره اجرا کنید (idempotent).
+-- ============================================================
+
+alter table public.lessons enable row level security;
+
+-- هر معلم فقط ردیف‌های خودش را می‌بیند/می‌سازد/ویرایش/حذف می‌کند.
+drop policy if exists "teachers manage own lessons" on public.lessons;
+create policy "teachers manage own lessons"
+  on public.lessons
+  for all
+  to authenticated
+  using (owner_id = auth.uid())
+  with check (owner_id = auth.uid());
+
+-- توجه: صفحه‌ی عمومی درس (لینک دانشجو) از سمت سرور با کلید service role
+-- خوانده می‌شود که RLS را دور می‌زند، پس نیازی به policy عمومی SELECT نیست.
+-- به همین دلیل، فهرست درس‌های یک معلم برای بقیه قابل مشاهده نیست.

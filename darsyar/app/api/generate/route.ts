@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateLesson } from "@/lib/anthropic";
-import { getServiceSupabase } from "@/lib/supabase/server";
+import { getServerSupabase } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 // تولید درس ممکن است چند ده ثانیه طول بکشد.
@@ -25,6 +25,29 @@ export async function POST(request: Request) {
     );
   }
 
+  // ۰) احراز هویت — فقط معلمِ واردشده می‌تواند درس بسازد
+  let supabase;
+  let userId: string;
+  try {
+    supabase = await getServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "برای ساخت درس ابتدا وارد شوید." },
+        { status: 401 },
+      );
+    }
+    userId = user.id;
+  } catch (err) {
+    console.error("بررسی احراز هویت ناموفق بود:", err);
+    return NextResponse.json(
+      { error: "خطای پیکربندی سرور. لطفاً بعداً تلاش کنید." },
+      { status: 500 },
+    );
+  }
+
   // ۱) تولید درس با Claude (شامل validate + یک retry)
   let generated;
   try {
@@ -40,12 +63,12 @@ export async function POST(request: Request) {
     );
   }
 
-  // ۲) ذخیره در Supabase
+  // ۲) ذخیره در Supabase (RLS تضمین می‌کند owner_id باید برابر کاربر باشد)
   try {
-    const supabase = getServiceSupabase();
     const { data, error } = await supabase
       .from("lessons")
       .insert({
+        owner_id: userId,
         title: generated.title,
         source_text: text,
         content: { keyPoints: generated.keyPoints, terms: generated.terms },

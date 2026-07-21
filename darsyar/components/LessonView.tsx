@@ -1,16 +1,20 @@
 import type { Lesson } from "@/lib/types";
 import QuizCard from "./QuizCard";
+import ShareLink from "./ShareLink";
 
 export default function LessonView({ lesson }: { lesson: Lesson }) {
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-xl font-bold text-slate-800 sm:text-2xl">
-          {lesson.title}
-        </h1>
-        <p className="mt-1 text-xs text-slate-400 tabular">
-          {lesson.terms.length} اصطلاح · {lesson.keyPoints.length} نکته‌ی کلیدی
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-800 sm:text-2xl">
+            {lesson.title}
+          </h1>
+          <p className="mt-1 text-xs text-slate-400 tabular">
+            {lesson.terms.length} اصطلاح · {lesson.keyPoints.length} نکته‌ی کلیدی
+          </p>
+        </div>
+        <ShareLink />
       </header>
 
       {/* نکات کلیدی */}
