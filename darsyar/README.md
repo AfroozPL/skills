@@ -52,6 +52,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - [x] **مرحله ۲ — مغز AI:** endpoint تولید درس با Claude، validate خروجی JSON + یک retry، ذخیره در Supabase.
 - [x] **مرحله ۳ — کاربران:** ورود معلم با Supabase Auth، RLS، لینک عمومی درس برای دانشجو.
 - [x] **مرحله ۴ — صیقل:** حالت لودینگ چرخشی + اسکلت، صفحات خطا/۴۰۴ فارسی، دکمه‌ی «تولید صوت (به‌زودی)».
+- [x] **تولید صوت:** پخش تلفظ اصطلاح و مثال‌ها با Web Speech API مرورگر (بدون کلید و هزینه).
 
 ## ساختار
 
@@ -73,7 +74,8 @@ darsyar/
 │   ├── TeacherForm.tsx         # فرم آپلود (paste/txt) + فراخوانی API
 │   ├── LessonView.tsx          # نمایش درس
 │   ├── QuizCard.tsx            # تمرین چهارگزینه‌ای تعاملی
-│   └── ShareLink.tsx           # کپی لینک عمومی درس
+│   ├── ShareLink.tsx           # کپی لینک عمومی درس
+│   └── SpeakButton.tsx         # پخش صوت (Web Speech API)
 ├── lib/
 │   ├── types.ts                # قرارداد داده‌ی درس
 │   ├── sample-lesson.ts        # داده‌ی نمونه‌ی مرحله ۱
