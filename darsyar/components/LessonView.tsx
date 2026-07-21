@@ -48,9 +48,22 @@ export default function LessonView({ lesson }: { lesson: Lesson }) {
             </div>
 
             <div>
-              <p className="mb-2 text-xs font-semibold text-slate-400">
-                مثال‌ها در موقعیت‌های مختلف:
-              </p>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold text-slate-400">
+                  مثال‌ها در موقعیت‌های مختلف:
+                </p>
+                <button
+                  type="button"
+                  disabled
+                  title="این قابلیت به‌زودی اضافه می‌شود"
+                  className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-400"
+                >
+                  🔊 تولید صوت
+                  <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-700">
+                    به‌زودی
+                  </span>
+                </button>
+              </div>
               <ul className="space-y-2">
                 {term.examples.map((ex, j) => (
                   <li

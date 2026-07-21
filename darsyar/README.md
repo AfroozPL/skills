@@ -51,7 +51,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - [x] **مرحله ۱ — اسکلت با داده‌ی تستی:** صفحه‌ی معلم (paste/آپلود txt) + صفحه‌ی درس با داده‌ی نمونه‌ی هاردکد، طراحی RTL.
 - [x] **مرحله ۲ — مغز AI:** endpoint تولید درس با Claude، validate خروجی JSON + یک retry، ذخیره در Supabase.
 - [x] **مرحله ۳ — کاربران:** ورود معلم با Supabase Auth، RLS، لینک عمومی درس برای دانشجو.
-- [ ] **مرحله ۴ — صیقل:** حالت لودینگ، پیام‌های خطای فارسی، دکمه‌ی «تولید صوت (به‌زودی)».
+- [x] **مرحله ۴ — صیقل:** حالت لودینگ چرخشی + اسکلت، صفحات خطا/۴۰۴ فارسی، دکمه‌ی «تولید صوت (به‌زودی)».
 
 ## ساختار
 
@@ -60,10 +60,13 @@ darsyar/
 ├── middleware.ts               # refresh session روی هر درخواست
 ├── app/
 │   ├── layout.tsx              # چیدمان RTL + هدر auth-aware
+│   ├── error.tsx               # صفحه‌ی خطای فارسی (error boundary)
+│   ├── not-found.tsx           # صفحه‌ی ۴۰۴ فارسی
 │   ├── page.tsx                # صفحه‌ی معلم (نیازمند ورود برای ساخت)
 │   ├── login/page.tsx          # ورود/ثبت‌نام معلم
 │   ├── dashboard/page.tsx      # فهرست درس‌های معلم (محافظت‌شده، RLS)
 │   ├── lesson/[id]/page.tsx    # صفحه‌ی عمومی درس (لینک دانشجو، بدون ورود)
+│   ├── lesson/[id]/loading.tsx # اسکلت لودینگ صفحه‌ی درس
 │   ├── auth/signout/route.ts   # خروج
 │   └── api/generate/route.ts   # endpoint تولید درس (نیازمند احراز هویت)
 ├── components/
